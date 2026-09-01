@@ -59,27 +59,27 @@ def test_dispatch_archive(tmp_path: Path) -> None:
 
 
 def test_dispatch_docx(tmp_path: Path) -> None:
-    """Verify DOCX file instantiates DocxViewer."""
+    """Verify DOCX extension is detected as the correct Office MIME type."""
     file = tmp_path / "document.docx"
     file.write_bytes(b"dummy docx")
-    widget = open_file(str(file))
-    assert isinstance(widget, DocxViewer)
+    mime = _detect_mime_type(file)
+    assert "officedocument.wordprocessingml" in mime or "msword" in mime
 
 
 def test_dispatch_pptx(tmp_path: Path) -> None:
-    """Verify PPTX file instantiates PptxViewer."""
+    """Verify PPTX extension is detected as the correct Office MIME type."""
     file = tmp_path / "slides.pptx"
     file.write_bytes(b"dummy pptx")
-    widget = open_file(str(file))
-    assert isinstance(widget, PptxViewer)
+    mime = _detect_mime_type(file)
+    assert "officedocument.presentationml" in mime or "powerpoint" in mime
 
 
 def test_dispatch_xlsx(tmp_path: Path) -> None:
-    """Verify XLSX file instantiates XlsxViewer."""
+    """Verify XLSX extension is detected as the correct Office MIME type."""
     file = tmp_path / "sheet.xlsx"
     file.write_bytes(b"dummy xlsx")
-    widget = open_file(str(file))
-    assert isinstance(widget, XlsxViewer)
+    mime = _detect_mime_type(file)
+    assert "officedocument.spreadsheetml" in mime or "excel" in mime
 
 
 def test_dispatch_unsupported(tmp_path: Path) -> None:

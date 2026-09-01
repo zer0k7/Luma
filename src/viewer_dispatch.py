@@ -16,7 +16,7 @@ from gi.repository import Gtk  # type: ignore # noqa: E402
 try:
     import magic  # type: ignore # noqa: E402
 except (ImportError, AttributeError):
-    magic = None
+    magic = None  # type: ignore[assignment]
 
 from src.security import validate_file_path  # noqa: E402
 from src.viewers.archive_viewer import ArchiveViewer  # noqa: E402
