@@ -11,14 +11,14 @@ import gi
 import openpyxl  # type: ignore
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # type: ignore
+from gi.repository import Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     ERROR_PARSING_FAILED,
     XLSX_EMPTY_SHEET,
     XLSX_TAB_DEFAULT_TITLE,
 )
-from src.viewers.base import FormatViewerError
+from src.viewers.base import FormatViewerError  # noqa: E402
 
 
 class XlsxViewer(Gtk.Notebook):
@@ -54,7 +54,9 @@ class XlsxViewer(Gtk.Notebook):
             for idx, sheet_name in enumerate(wb.sheetnames):
                 sheet = wb[sheet_name]
                 tab_widget = self._create_sheet_widget(sheet)
-                tab_label = Gtk.Label(label=sheet_name or XLSX_TAB_DEFAULT_TITLE.format(index=idx + 1))
+                tab_label = Gtk.Label(
+                    label=sheet_name or XLSX_TAB_DEFAULT_TITLE.format(index=idx + 1)
+                )
                 self.append_page(tab_widget, tab_label)
             wb.close()
         except Exception as exc:

@@ -11,15 +11,15 @@ import gi
 from pptx import Presentation  # type: ignore
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Pango  # type: ignore
+from gi.repository import Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     ERROR_PARSING_FAILED,
     PPTX_NEXT_SLIDE_TOOLTIP,
     PPTX_PREV_SLIDE_TOOLTIP,
     PPTX_SLIDE_STATUS_TEMPLATE,
 )
-from src.viewers.base import FormatViewerError
+from src.viewers.base import FormatViewerError  # noqa: E402
 
 
 class PptxViewer(Gtk.Box):
@@ -94,9 +94,7 @@ class PptxViewer(Gtk.Box):
         self.toolbar.append(self.btn_next)
 
         total = max(len(self.slide_data), 1)
-        self.lbl_status = Gtk.Label(
-            label=PPTX_SLIDE_STATUS_TEMPLATE.format(current=1, total=total)
-        )
+        self.lbl_status = Gtk.Label(label=PPTX_SLIDE_STATUS_TEMPLATE.format(current=1, total=total))
         self.toolbar.append(self.lbl_status)
 
         self.append(self.toolbar)
@@ -138,9 +136,7 @@ class PptxViewer(Gtk.Box):
             self.slide_box.append(lbl)
 
         total = max(len(self.slide_data), 1)
-        self.lbl_status.set_label(
-            PPTX_SLIDE_STATUS_TEMPLATE.format(current=index + 1, total=total)
-        )
+        self.lbl_status.set_label(PPTX_SLIDE_STATUS_TEMPLATE.format(current=index + 1, total=total))
 
     def _on_prev_slide(self, _button: Any) -> None:
         """Go to the previous slide."""

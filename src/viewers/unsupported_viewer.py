@@ -9,9 +9,9 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # type: ignore
+from gi.repository import Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     UNSUPPORTED_INSTRUCTIONS,
     UNSUPPORTED_MIME_LABEL,
     UNSUPPORTED_SIZE_LABEL,
@@ -61,15 +61,11 @@ class UnsupportedViewer(Gtk.ScrolledWindow):
         file_size = Path(self.file_path).stat().st_size
         meta_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
 
-        mime_lbl = Gtk.Label(
-            label=UNSUPPORTED_MIME_LABEL.format(mime_type=self.mime_type)
-        )
+        mime_lbl = Gtk.Label(label=UNSUPPORTED_MIME_LABEL.format(mime_type=self.mime_type))
         mime_lbl.set_xalign(0.0)
         meta_box.append(mime_lbl)
 
-        size_lbl = Gtk.Label(
-            label=UNSUPPORTED_SIZE_LABEL.format(size_bytes=f"{file_size:,}")
-        )
+        size_lbl = Gtk.Label(label=UNSUPPORTED_SIZE_LABEL.format(size_bytes=f"{file_size:,}"))
         size_lbl.set_xalign(0.0)
         meta_box.append(size_lbl)
 

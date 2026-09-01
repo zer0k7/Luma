@@ -4,7 +4,6 @@ Initializes GTK4/libadwaita application instance, configures GLib structured log
 processes command line arguments, and launches the main window.
 """
 
-from pathlib import Path
 import sys
 from typing import List, Optional
 
@@ -12,13 +11,13 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib  # type: ignore
+from gi.repository import Adw, Gio, GLib  # type: ignore # noqa: E402
 
-from src import get_version
-from src.security import validate_file_path
-from src.strings import CLI_OPEN_HELP, CLI_VERSION_HELP
-from src.viewers.base import LumaViewerError
-from src.window import MainWindow
+from src import get_version  # noqa: E402
+from src.security import validate_file_path  # noqa: E402
+from src.strings import CLI_OPEN_HELP, CLI_VERSION_HELP  # noqa: E402
+from src.viewers.base import LumaViewerError  # noqa: E402
+from src.window import MainWindow  # noqa: E402
 
 LOG_DOMAIN = "Luma"
 

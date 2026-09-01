@@ -1,7 +1,7 @@
 """Unit tests for viewer dispatch logic and widget selection."""
 
-from pathlib import Path
 import zipfile
+from pathlib import Path
 
 from src.viewer_dispatch import _detect_mime_type, open_file
 from src.viewers.archive_viewer import ArchiveViewer
@@ -56,6 +56,30 @@ def test_dispatch_archive(tmp_path: Path) -> None:
         zf.writestr("test.txt", "data")
     widget = open_file(str(file))
     assert isinstance(widget, ArchiveViewer)
+
+
+def test_dispatch_docx(tmp_path: Path) -> None:
+    """Verify DOCX file instantiates DocxViewer."""
+    file = tmp_path / "document.docx"
+    file.write_bytes(b"dummy docx")
+    widget = open_file(str(file))
+    assert isinstance(widget, DocxViewer)
+
+
+def test_dispatch_pptx(tmp_path: Path) -> None:
+    """Verify PPTX file instantiates PptxViewer."""
+    file = tmp_path / "slides.pptx"
+    file.write_bytes(b"dummy pptx")
+    widget = open_file(str(file))
+    assert isinstance(widget, PptxViewer)
+
+
+def test_dispatch_xlsx(tmp_path: Path) -> None:
+    """Verify XLSX file instantiates XlsxViewer."""
+    file = tmp_path / "sheet.xlsx"
+    file.write_bytes(b"dummy xlsx")
+    widget = open_file(str(file))
+    assert isinstance(widget, XlsxViewer)
 
 
 def test_dispatch_unsupported(tmp_path: Path) -> None:

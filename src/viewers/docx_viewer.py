@@ -11,10 +11,10 @@ import docx  # type: ignore
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Pango  # type: ignore
+from gi.repository import Gtk, Pango  # type: ignore # noqa: E402
 
-from src.strings import ERROR_PARSING_FAILED
-from src.viewers.base import FormatViewerError
+from src.strings import ERROR_PARSING_FAILED  # noqa: E402
+from src.viewers.base import FormatViewerError  # noqa: E402
 
 
 class DocxViewer(Gtk.ScrolledWindow):

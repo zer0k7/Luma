@@ -10,15 +10,15 @@ from typing import Any
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, Gtk  # type: ignore
+from gi.repository import Gio, Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     ERROR_PARSING_FAILED,
     IMG_FIT_TOOLTIP,
     IMG_ZOOM_IN_TOOLTIP,
     IMG_ZOOM_OUT_TOOLTIP,
 )
-from src.viewers.base import FormatViewerError
+from src.viewers.base import FormatViewerError  # noqa: E402
 
 
 class ImageViewer(Gtk.Box):

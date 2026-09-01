@@ -11,17 +11,17 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, Gtk  # type: ignore
+from gi.repository import Adw, Gio, GLib, Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     APP_NAME,
     BTN_OPEN_FILE,
     BTN_OPEN_FILE_TOOLTIP,
     HEADER_SUBTITLE_NO_FILE,
     HEADER_TITLE_DEFAULT,
 )
-from src.viewer_dispatch import open_file
-from src.viewers.base import LumaViewerError
+from src.viewer_dispatch import open_file  # noqa: E402
+from src.viewers.base import LumaViewerError  # noqa: E402
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -93,9 +93,7 @@ class MainWindow(Adw.ApplicationWindow):
         file_dialog.set_title(BTN_OPEN_FILE)
         file_dialog.open(self, None, self._on_file_dialog_complete)
 
-    def _on_file_dialog_complete(
-        self, dialog: Gtk.FileDialog, result: Gio.AsyncResult
-    ) -> None:
+    def _on_file_dialog_complete(self, dialog: Gtk.FileDialog, result: Gio.AsyncResult) -> None:
         """Callback invoked when user selects a file in file dialog."""
         try:
             selected_file = dialog.open_finish(result)

@@ -6,11 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from src.security import validate_file_path
-from src.viewers.base import (
-    FileNotFoundViewerError,
-    PermissionViewerError,
-    SecurityViewerError,
-)
+from src.viewers.base import FileNotFoundViewerError, PermissionViewerError, SecurityViewerError
 
 
 def test_validate_existing_file(tmp_path: Path) -> None:

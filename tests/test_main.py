@@ -1,8 +1,6 @@
 """Unit tests for application entry point and command-line handling."""
 
 import io
-from pathlib import Path
-import sys
 from unittest.mock import patch
 
 from src import get_version

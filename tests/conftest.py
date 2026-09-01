@@ -4,7 +4,6 @@ Provides test fixtures and mock GTK/Adwaita/WebKit bindings when running in envi
 where native C-libraries are not available.
 """
 
-from pathlib import Path
 import sys
 from unittest.mock import MagicMock
 
@@ -12,7 +11,7 @@ from unittest.mock import MagicMock
 # register mock modules in sys.modules so unit tests run seamlessly.
 if "gi" not in sys.modules:
     try:
-        import gi
+        import gi  # noqa: F401
     except ImportError:
         gi_mock = MagicMock()
         gi_repository_mock = MagicMock()
@@ -141,6 +140,7 @@ for pkg_name in ["docx", "pptx", "openpyxl", "magic"]:
         except ImportError:
             mock_pkg = MagicMock()
             if pkg_name == "docx":
+
                 def mock_document(path):
                     if "corrupt" in str(path):
                         raise ValueError("Corrupted docx")
@@ -154,19 +154,26 @@ for pkg_name in ["docx", "pptx", "openpyxl", "magic"]:
                     para.runs = [run]
                     doc.paragraphs = [para]
                     return doc
+
                 mock_pkg.Document = mock_document
             elif pkg_name == "openpyxl":
+
                 def mock_load_workbook(path, **kwargs):
                     if "corrupt" in str(path):
                         raise ValueError("Corrupted xlsx")
                     wb = MagicMock()
                     wb.sheetnames = ["Sheet1"]
                     sheet = MagicMock()
-                    sheet.iter_rows.return_value = [("Header 1", "Header 2"), ("Val 1", "Val 2")]
+                    sheet.iter_rows.return_value = [
+                        ("Header 1", "Header 2"),
+                        ("Val 1", "Val 2"),
+                    ]
                     wb.__getitem__.return_value = sheet
                     return wb
+
                 mock_pkg.load_workbook = mock_load_workbook
             elif pkg_name == "pptx":
+
                 def mock_presentation(path):
                     if "corrupt" in str(path):
                         raise ValueError("Corrupted pptx")
@@ -180,6 +187,7 @@ for pkg_name in ["docx", "pptx", "openpyxl", "magic"]:
                     slide.shapes = [shape]
                     prs.slides = [slide]
                     return prs
+
                 mock_pkg.Presentation = mock_presentation
             elif pkg_name == "magic":
                 mock_pkg.from_file.return_value = None

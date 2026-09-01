@@ -4,7 +4,6 @@ Renders PDF files with page navigation, zoom controls, in-document search,
 and printing support.
 """
 
-from typing import Optional
 from pathlib import Path
 
 import gi
@@ -15,14 +14,14 @@ try:
 except (ValueError, AttributeError):
     pass
 
-from gi.repository import Gdk, GLib, Gtk  # type: ignore
+from gi.repository import Gdk, Gtk  # type: ignore # noqa: E402
 
 try:
-    from gi.repository import WebKit  # type: ignore
+    from gi.repository import WebKit  # type: ignore # noqa: E402
 except (ImportError, AttributeError):
     WebKit = None
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     PDF_FIT_WIDTH_TOOLTIP,
     PDF_NEXT_PAGE_TOOLTIP,
     PDF_PAGE_STATUS_TEMPLATE,

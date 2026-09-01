@@ -8,16 +8,8 @@ import os
 from pathlib import Path
 from typing import Optional, Sequence
 
-from src.strings import (
-    ERROR_FILE_NOT_FOUND,
-    ERROR_FILE_UNREADABLE,
-    ERROR_PATH_TRAVERSAL,
-)
-from src.viewers.base import (
-    FileNotFoundViewerError,
-    PermissionViewerError,
-    SecurityViewerError,
-)
+from src.strings import ERROR_FILE_NOT_FOUND, ERROR_FILE_UNREADABLE, ERROR_PATH_TRAVERSAL
+from src.viewers.base import FileNotFoundViewerError, PermissionViewerError, SecurityViewerError
 
 
 def _check_allowed_directories(
@@ -35,10 +27,7 @@ def _check_allowed_directories(
     Raises:
         SecurityViewerError: If resolved_path does not belong to any allowed dir.
     """
-    is_inside = any(
-        resolved_path == base or base in resolved_path.parents
-        for base in allowed_dirs
-    )
+    is_inside = any(resolved_path == base or base in resolved_path.parents for base in allowed_dirs)
     if not is_inside:
         error_msg = ERROR_PATH_TRAVERSAL.format(path=raw_path)
         raise SecurityViewerError(error_msg, path=raw_path)

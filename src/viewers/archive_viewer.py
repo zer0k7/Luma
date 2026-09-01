@@ -4,18 +4,18 @@ Inspects archive contents (.zip, .tar, .tar.gz, .tar.bz2, .tar.xz)
 and renders a file catalog with names and sizes.
 """
 
+import tarfile
+import zipfile
 from datetime import datetime
 from pathlib import Path
-import tarfile
 from typing import List, Tuple
-import zipfile
 
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # type: ignore
+from gi.repository import Gtk  # type: ignore # noqa: E402
 
-from src.strings import (
+from src.strings import (  # noqa: E402
     ARCHIVE_COL_COMPRESSED,
     ARCHIVE_COL_DATE,
     ARCHIVE_COL_FILENAME,
@@ -23,7 +23,7 @@ from src.strings import (
     ARCHIVE_EMPTY,
     ERROR_PARSING_FAILED,
 )
-from src.viewers.base import FormatViewerError
+from src.viewers.base import FormatViewerError  # noqa: E402
 
 
 class ArchiveViewer(Gtk.ScrolledWindow):
@@ -75,24 +75,28 @@ class ArchiveViewer(Gtk.ScrolledWindow):
         with zipfile.ZipFile(file_path, "r") as zf:
             for info in zf.infolist():
                 date_str = "%04d-%02d-%02d %02d:%02d" % info.date_time[:5]
-                self.entries.append((
-                    info.filename,
-                    f"{info.file_size:,} bytes",
-                    f"{info.compress_size:,} bytes",
-                    date_str,
-                ))
+                self.entries.append(
+                    (
+                        info.filename,
+                        f"{info.file_size:,} bytes",
+                        f"{info.compress_size:,} bytes",
+                        date_str,
+                    )
+                )
 
     def _read_tar(self, file_path: str) -> None:
         """Read members from a tar archive."""
         with tarfile.open(file_path, "r:*") as tf:
             for member in tf.getmembers():
                 dt = datetime.fromtimestamp(member.mtime).strftime("%Y-%m-%d %H:%M")
-                self.entries.append((
-                    member.name,
-                    f"{member.size:,} bytes",
-                    "-",
-                    dt,
-                ))
+                self.entries.append(
+                    (
+                        member.name,
+                        f"{member.size:,} bytes",
+                        "-",
+                        dt,
+                    )
+                )
 
     def _build_ui(self) -> None:
         """Build the grid table displaying archive entries."""

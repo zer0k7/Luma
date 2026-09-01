@@ -11,23 +11,22 @@ from typing import Optional
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # type: ignore
+from gi.repository import Gtk  # type: ignore # noqa: E402
 
 try:
-    import magic  # type: ignore
+    import magic  # type: ignore # noqa: E402
 except (ImportError, AttributeError):
     magic = None
 
-from src.security import validate_file_path
-from src.viewers.archive_viewer import ArchiveViewer
-from src.viewers.base import LumaViewerError
-from src.viewers.docx_viewer import DocxViewer
-from src.viewers.image_viewer import ImageViewer
-from src.viewers.pdf_viewer import PdfViewer
-from src.viewers.pptx_viewer import PptxViewer
-from src.viewers.text_viewer import PlainTextViewer
-from src.viewers.unsupported_viewer import UnsupportedViewer
-from src.viewers.xlsx_viewer import XlsxViewer
+from src.security import validate_file_path  # noqa: E402
+from src.viewers.archive_viewer import ArchiveViewer  # noqa: E402
+from src.viewers.docx_viewer import DocxViewer  # noqa: E402
+from src.viewers.image_viewer import ImageViewer  # noqa: E402
+from src.viewers.pdf_viewer import PdfViewer  # noqa: E402
+from src.viewers.pptx_viewer import PptxViewer  # noqa: E402
+from src.viewers.text_viewer import PlainTextViewer  # noqa: E402
+from src.viewers.unsupported_viewer import UnsupportedViewer  # noqa: E402
+from src.viewers.xlsx_viewer import XlsxViewer  # noqa: E402
 
 # Ensure standard office and web mimetypes are registered
 mimetypes.add_type(
@@ -115,7 +114,17 @@ def _select_widget(resolved_path: Path, mime_type: str) -> Gtk.Widget:
         return XlsxViewer(path_str)
 
     if mime_type.startswith("text/") or resolved_path.suffix.lower() in {
-        ".txt", ".md", ".rst", ".log", ".csv", ".json", ".xml", ".yaml", ".yml", ".ini", ".conf",
+        ".txt",
+        ".md",
+        ".rst",
+        ".log",
+        ".csv",
+        ".json",
+        ".xml",
+        ".yaml",
+        ".yml",
+        ".ini",
+        ".conf",
     }:
         return PlainTextViewer(path_str)
 
@@ -123,7 +132,12 @@ def _select_widget(resolved_path: Path, mime_type: str) -> Gtk.Widget:
         return ImageViewer(path_str)
 
     if mime_type in ARCHIVE_MIME_TYPES or resolved_path.suffix.lower() in {
-        ".zip", ".tar", ".gz", ".bz2", ".xz", ".tgz",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+        ".tgz",
     }:
         return ArchiveViewer(path_str)
 

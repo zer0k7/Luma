@@ -1,7 +1,6 @@
 """Unit tests for version reading and formatting."""
 
 import re
-from pathlib import Path
 
 from src import VERSION_FILE_PATH, get_version
 
