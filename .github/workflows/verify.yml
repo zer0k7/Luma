@@ -190,7 +190,7 @@ jobs:
         run: pip install pip-audit
 
       - name: Run pip-audit
-        run: pip-audit -r requirements.txt --format=columns --severity high
+        run: cd /tmp && pip-audit -r $GITHUB_WORKSPACE/requirements.txt --format=columns --severity high
 
       - name: Write summary
         if: always()
