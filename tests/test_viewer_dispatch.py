@@ -5,13 +5,10 @@ from pathlib import Path
 
 from src.viewer_dispatch import _detect_mime_type, open_file
 from src.viewers.archive_viewer import ArchiveViewer
-from src.viewers.docx_viewer import DocxViewer
 from src.viewers.image_viewer import ImageViewer
 from src.viewers.pdf_viewer import PdfViewer
-from src.viewers.pptx_viewer import PptxViewer
 from src.viewers.text_viewer import PlainTextViewer
 from src.viewers.unsupported_viewer import UnsupportedViewer
-from src.viewers.xlsx_viewer import XlsxViewer
 
 
 def test_detect_mime_type(tmp_path: Path) -> None:
