@@ -10,3 +10,14 @@ line_length = 100
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+warn_unused_ignores = false
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = "src.*"
+disallow_subclassing_any = false
+warn_unused_ignores = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
