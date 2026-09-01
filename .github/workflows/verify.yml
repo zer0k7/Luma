@@ -1,0 +1,216 @@
+name: Verify
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  lint:
+    name: Lint and format check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-lint-${{ hashFiles('requirements-dev.txt') }}
+          restore-keys: pip-lint-
+
+      - name: Install lint tools
+        run: pip install flake8 black isort
+
+      - name: Run black
+        run: black --check --diff src/ tests/
+
+      - name: Run isort
+        run: isort --check-only --diff src/ tests/
+
+      - name: Run flake8
+        run: flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "### Lint" >> $GITHUB_STEP_SUMMARY
+          echo "black, isort, flake8 completed." >> $GITHUB_STEP_SUMMARY
+
+  type-check:
+    name: Type check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-mypy-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: pip-mypy-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mypy types-Pillow
+
+      - name: Run mypy
+        run: mypy src/ --strict --ignore-missing-imports
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "### Type Check" >> $GITHUB_STEP_SUMMARY
+          echo "mypy strict mode completed." >> $GITHUB_STEP_SUMMARY
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libmagic1 \
+            python3-gi \
+            gir1.2-gtk-4.0 \
+            gir1.2-adw-1
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-test-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: pip-test-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short \
+            --cov=src --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --junitxml=junit.xml
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "### Tests" >> $GITHUB_STEP_SUMMARY
+          if [ -f junit.xml ]; then
+            TESTS=$(grep -oP 'tests="\K[^"]+' junit.xml | head -1 || echo "?")
+            FAILURES=$(grep -oP 'failures="\K[^"]+' junit.xml | head -1 || echo "?")
+            echo "Tests: ${TESTS} | Failures: ${FAILURES}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  build-check:
+    name: Build dry-run
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install packaging dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            file \
+            imagemagick
+
+      - name: Validate assets
+        run: |
+          echo "Checking required assets..."
+          test -f assets/luma.svg || (echo "Missing assets/luma.svg" && exit 1)
+          test -f VERSION || (echo "Missing VERSION" && exit 1)
+          test -f README.md || (echo "Missing README.md" && exit 1)
+          test -f CHANGELOG.md || (echo "Missing CHANGELOG.md" && exit 1)
+          echo "All required assets present."
+
+      - name: Validate VERSION format
+        run: |
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "${VERSION}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$' \
+            || (echo "VERSION '${VERSION}' does not match semver format" && exit 1)
+          echo "VERSION: ${VERSION}"
+
+      - name: Validate AppImage build script exists
+        run: |
+          test -x packaging/appimage/build.sh \
+            || (echo "packaging/appimage/build.sh missing or not executable" && exit 1)
+
+      - name: Run AppImage build dry-run
+        run: packaging/appimage/build.sh --dry-run
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "### Build Dry-Run" >> $GITHUB_STEP_SUMMARY
+          echo "Assets and build scripts validated." >> $GITHUB_STEP_SUMMARY
+
+  security-scan:
+    name: Dependency security scan
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit
+        run: |
+          pip-audit -r requirements.txt \
+            --format=json \
+            --output=audit-results.json \
+            --severity high || AUDIT_FAILED=1
+          pip-audit -r requirements.txt --format=columns
+          if [ "${AUDIT_FAILED}" = "1" ]; then
+            echo "Security scan found high or critical vulnerabilities." >&2
+            exit 1
+          fi
+
+      - name: Upload audit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit
+          path: audit-results.json
+          retention-days: 30
+
+      - name: Write summary
+        if: always()
+        run: |
+          echo "### Security Scan" >> $GITHUB_STEP_SUMMARY
+          echo "pip-audit completed against requirements.txt." >> $GITHUB_STEP_SUMMARY

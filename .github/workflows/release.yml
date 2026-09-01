@@ -1,0 +1,271 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  validate-tag:
+    name: Validate tag against VERSION
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      prerelease: ${{ steps.extract.outputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract and validate version
+        id: extract
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Strip leading 'v'
+          TAG_VERSION="${TAG#v}"
+          REPO_VERSION="$(cat VERSION | tr -d '[:space:]')"
+
+          echo "Tag version:  ${TAG_VERSION}"
+          echo "Repo VERSION: ${REPO_VERSION}"
+
+          if [ "${TAG_VERSION}" != "${REPO_VERSION}" ]; then
+            echo "ERROR: Tag '${TAG}' does not match VERSION file ('${REPO_VERSION}')." >&2
+            echo "Update the VERSION file and commit before tagging." >&2
+            exit 1
+          fi
+
+          echo "version=${TAG_VERSION}" >> $GITHUB_OUTPUT
+
+          # Detect pre-release
+          if echo "${TAG_VERSION}" | grep -qE '\-(alpha|beta|rc)'; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-deb:
+    name: Build .deb package
+    runs-on: ubuntu-24.04
+    needs: validate-tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            dpkg-dev \
+            fakeroot \
+            python3-pip \
+            python3-venv
+
+      - name: Build .deb
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          chmod +x packaging/deb/build.sh
+          packaging/deb/build.sh
+
+      - name: Verify output
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          DEB="dist/luma_${VERSION}_amd64.deb"
+          test -f "${DEB}" || (echo "Expected ${DEB} not found" && exit 1)
+          dpkg-deb --info "${DEB}"
+          echo "deb_path=${DEB}" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luma-deb
+          path: dist/luma_${{ needs.validate-tag.outputs.version }}_amd64.deb
+          retention-days: 7
+
+  build-rpm:
+    name: Build .rpm package
+    runs-on: ubuntu-24.04
+    needs: validate-tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            rpm \
+            alien \
+            fakeroot
+
+      - name: Build .rpm
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          chmod +x packaging/rpm/build.sh
+          packaging/rpm/build.sh
+
+      - name: Verify output
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          RPM="dist/luma-${VERSION}-1.x86_64.rpm"
+          test -f "${RPM}" || (echo "Expected ${RPM} not found" && exit 1)
+          rpm -qip "${RPM}" || true
+          echo "rpm_path=${RPM}" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luma-rpm
+          path: dist/luma-${{ needs.validate-tag.outputs.version }}-1.x86_64.rpm
+          retention-days: 7
+
+  build-appimage:
+    name: Build .AppImage
+    runs-on: ubuntu-24.04
+    needs: validate-tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libfuse2 \
+            python3-pip \
+            python3-venv \
+            imagemagick \
+            desktop-file-utils \
+            libglib2.0-bin
+
+      - name: Build AppImage
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          chmod +x packaging/appimage/build.sh
+          packaging/appimage/build.sh
+
+      - name: Verify output
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          APPIMAGE="dist/Luma-${VERSION}-x86_64.AppImage"
+          test -f "${APPIMAGE}" || (echo "Expected ${APPIMAGE} not found" && exit 1)
+          test -x "${APPIMAGE}" || (echo "AppImage is not executable" && exit 1)
+          file "${APPIMAGE}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luma-appimage
+          path: dist/Luma-${{ needs.validate-tag.outputs.version }}-x86_64.AppImage
+          retention-days: 7
+
+  build-tarball:
+    name: Build source tarball
+    runs-on: ubuntu-24.04
+    needs: validate-tag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create tarball
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          mkdir -p dist
+          git archive \
+            --format=tar.gz \
+            --prefix="luma-${VERSION}/" \
+            --output="dist/luma-${VERSION}.tar.gz" \
+            HEAD
+
+      - name: Verify output
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          TAR="dist/luma-${VERSION}.tar.gz"
+          test -f "${TAR}" || (echo "Expected ${TAR} not found" && exit 1)
+          tar -tzf "${TAR}" | head -20
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luma-tarball
+          path: dist/luma-${{ needs.validate-tag.outputs.version }}.tar.gz
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-24.04
+    needs:
+      - validate-tag
+      - build-deb
+      - build-rpm
+      - build-appimage
+      - build-tarball
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts/
+
+      - name: Flatten artifact directories
+        run: |
+          mkdir -p dist
+          find release-artifacts/ -type f -exec mv {} dist/ \;
+          ls -lh dist/
+
+      - name: Extract changelog for this version
+        env:
+          VERSION: ${{ needs.validate-tag.outputs.version }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, re, sys
+
+          version = os.environ["VERSION"]
+          changelog_path = "CHANGELOG.md"
+
+          with open(changelog_path, "r") as f:
+              content = f.read()
+
+          # Match the section for this version: ## [x.y.z] or ## x.y.z
+          pattern = rf"(?m)^## \[?{re.escape(version)}\]?.*?$(.+?)(?=^## |\Z)"
+          match = re.search(pattern, content, re.DOTALL | re.MULTILINE)
+
+          if match:
+              notes = match.group(1).strip()
+          else:
+              notes = f"Release {version}."
+
+          with open("release-notes.md", "w") as f:
+              f.write(notes)
+
+          print(f"Extracted {len(notes)} characters of release notes.")
+          PYEOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Luma ${{ needs.validate-tag.outputs.version }}
+          body_path: release-notes.md
+          draft: ${{ needs.validate-tag.outputs.prerelease == 'true' }}
+          prerelease: ${{ needs.validate-tag.outputs.prerelease == 'true' }}
+          files: |
+            dist/luma_${{ needs.validate-tag.outputs.version }}_amd64.deb
+            dist/luma-${{ needs.validate-tag.outputs.version }}-1.x86_64.rpm
+            dist/Luma-${{ needs.validate-tag.outputs.version }}-x86_64.AppImage
+            dist/luma-${{ needs.validate-tag.outputs.version }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

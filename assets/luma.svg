@@ -1,0 +1,41 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="112" fill="#1E2A3A"/>
+
+  <!-- Back document sheet (offset) -->
+  <rect x="142" y="108" width="200" height="260" rx="14" fill="#2C3E52"/>
+
+  <!-- Middle document sheet (slightly offset) -->
+  <rect x="158" y="96" width="200" height="260" rx="14" fill="#36506A"/>
+
+  <!-- Front document sheet -->
+  <rect x="174" y="84" width="200" height="268" rx="14" fill="#F8F4EE"/>
+
+  <!-- Document lines — text simulation -->
+  <rect x="204" y="140" width="140" height="10" rx="5" fill="#1E2A3A" opacity="0.18"/>
+  <rect x="204" y="164" width="120" height="10" rx="5" fill="#1E2A3A" opacity="0.13"/>
+  <rect x="204" y="188" width="132" height="10" rx="5" fill="#1E2A3A" opacity="0.13"/>
+  <rect x="204" y="212" width="100" height="10" rx="5" fill="#1E2A3A" opacity="0.10"/>
+
+  <!-- Divider line -->
+  <rect x="204" y="240" width="140" height="1.5" rx="1" fill="#1E2A3A" opacity="0.12"/>
+
+  <rect x="204" y="258" width="140" height="10" rx="5" fill="#1E2A3A" opacity="0.13"/>
+  <rect x="204" y="282" width="108" height="10" rx="5" fill="#1E2A3A" opacity="0.10"/>
+  <rect x="204" y="306" width="124" height="10" rx="5" fill="#1E2A3A" opacity="0.10"/>
+
+  <!-- Lens / light circle — main accent -->
+  <!-- Outer ring -->
+  <circle cx="322" cy="330" r="82" fill="#1E2A3A" opacity="0.55"/>
+  <!-- Lens body -->
+  <circle cx="322" cy="330" r="72" fill="#C9A84C" opacity="0.92"/>
+  <!-- Inner lens highlight -->
+  <circle cx="322" cy="330" r="54" fill="#1E2A3A" opacity="0.88"/>
+  <!-- Inner lens shine -->
+  <circle cx="322" cy="330" r="42" fill="#C9A84C" opacity="0.18"/>
+  <!-- Specular highlight -->
+  <ellipse cx="305" cy="313" rx="14" ry="10" fill="#F8F4EE" opacity="0.55" transform="rotate(-30 305 313)"/>
+
+  <!-- Lens handle -->
+  <rect x="368" y="374" width="48" height="16" rx="8" fill="#C9A84C" opacity="0.9" transform="rotate(45 368 374)"/>
+</svg>

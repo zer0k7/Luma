@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Luma
+Comment=Polished document viewer for Linux
+Exec=luma --open %u
+Icon=luma
+Terminal=false
+Type=Application
+Categories=Office;Viewer;Graphics;Utility;
+MimeType=application/pdf;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.presentationml.presentation;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;text/plain;text/markdown;text/csv;image/png;image/jpeg;image/webp;image/svg+xml;application/zip;application/x-tar;application/gzip;
+StartupNotify=true
